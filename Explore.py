@@ -3,13 +3,10 @@ import CorpusLoaders
 def run_pos_filter(filter, word):
     return not filter or word.pos in filter
 
-
 def analyze_sentences(corpus, syn_filter):
     met_counts = {}
     for sentence in corpus.instances:
-        #print (sentence.text())
         for w in sentence.words:
-            print (w, w.dep)
             if w.dep and w.dep[-1] in syn_filter:
                 for w2 in sentence.find_dependencies(w, rec=True):
                     if w2.lemma not in met_counts:
@@ -25,6 +22,7 @@ def analyze_sentences(corpus, syn_filter):
     met_keys = sorted(met_keys, key=lambda x : float(sum(met_counts[x])), reverse=True)
     for word in met_keys[:100]:
         print(word + "," + ",".join([str(s) for s in met_counts[word]]))
+
 
 def analyze_word_domains(corpus, filters=None, corpus_class=CorpusLoaders.LCCCorpus):
     words = corpus.get_words(filters=filters)
@@ -51,7 +49,6 @@ def get_verb_arguments(words, n=0):
 
     for verb in words:
         args = {}
-        # get regular arguments
         sentence = verb.sentence
         for word in sentence.words:
             if verb.text in word.allen_tags and set(word.allen_tags[verb.text]) != {"O"}:
@@ -109,6 +106,7 @@ def analyze_lemma_metaphors(corpus, lemmas):
             print (sent[0] + ";;" + sent[1])
         print ("--")
 
+        
 def analyze_verb_met_percent(corpus, by_class=False):
     res = {}
 
