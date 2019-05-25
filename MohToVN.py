@@ -1,13 +1,15 @@
+from Util import vn_api_path, extra_root
 import sys
-sys.path.append("/home/kevin/GitHub/verbnet/api/")
+
+sys.path.append(vn_api_path)
 import verbnet
 
 from nltk.corpus import wordnet
 from nltk.corpus.reader.wordnet import WordNetError
 
-VN32 = "/home/kevin/VerbNet/verbnet3.2/"
+VN32 = extra_root + "verbnet3.2/"
 
-def moh_anns(loc="corpora/moh/Metaphor-Emotion-Data-Files/Data-metaphoric-or-literal.txt"):
+def moh_anns(loc=extra_root + "corpora/moh/Metaphor-Emotion-Data-Files/Data-metaphoric-or-literal.txt"):
     res = {}
     with open(loc) as inp:
         inp = inp.readlines()[1:]
