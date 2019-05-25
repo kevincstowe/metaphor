@@ -7,11 +7,11 @@ def plot_data():
     colors = ["blue", "green", "gray", "cyan"]
 
     ind = np.arange(4)
-
-    gao_vals = [.76, .74, .67, .72]
-    vn_vals = [.77, .75, .68, .73]
-    syn_vals = [.77, .75, .68, .73]
-    both_vals = [.79, .76, .69, .74]
+    # MOH-X, Trofi, VUA all, VUA verbs
+    gao_vals = [.763, .728, .734, .683]
+    vn_vals = [.776, .732, .739, .698]
+    syn_vals = [.777, .739, .742, .693]
+    both_vals = [.789, .735, .743, .700]
 
     axes = pp.gca()
     axes.set_ylim([.65, .8])

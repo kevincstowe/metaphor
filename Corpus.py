@@ -2,6 +2,7 @@ import string
 import json
 import jsonlines
 import collections
+import sys
 
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
@@ -49,19 +50,16 @@ class Corpus(object):
                 res.add(word.text)
         self.lexicon = list(res)
 
-    def get_training_data(self):
-        return self.words[:int(len(self.words)*.75)]
-
-    def get_test_data(self):
-        return self.words[int(len(self.words)*.75):]
-
     def parse_and_save(self, output):
         res = {}
         c = 1
         for sent in self.instances:
             try:
                 parse = list(SDP.parse_sentence(sent.text()))[0].to_conll(style=10)
-                res[sent.id] = parse
+                try:
+                    res[sent.source_file + "-" + sent.id] = parse
+                except:
+                    res[sent.id] = parse
             except Exception as e:
                 print (e, sent.text())
             if c % 100 == 0:
@@ -97,21 +95,19 @@ class Sentence(object):
             return None
 
         else:
-            if word.dep[2] == 0:
+            if word.dep[2] == '0':
                 return None
             else:
                 try:
-                    res = self.words[int(word.dep[2])-1]
+                    return self.words[int(word.dep[6])-1]
                 except IndexError as e:
-                    print(word.dep)
-                    print([(w.text, w.dep) for w in self.words])
+#                    print(word.dep, len(self.words))
+#                    print([(w.text, w.dep) for w in self.words])
                     return None
-
-                return self.words[int(word.dep[2])-1]
 
     def find_dependencies(self, word, rec=False):
         if not rec:
-            return [w for w in self.words if w.dep and int(w.dep[2]) == word.index+1]
+            return [w for w in self.words if w.dep and int(w.dep[6]) == word.index+1]
 
 class Word(object):
     def __init__(self, text="", met="N", pos=None, lemma=None, sentence=None, index=None):
@@ -191,21 +187,21 @@ def align_words(words1, words2, remove_punct=False):
     return res
 
 
-def add_dependencies(metaphors, deps_loc, lex_field=0):
+def add_dependencies(metaphors, deps_loc, lex_field=1):
     lemmatizer = WordNetLemmatizer()
     pos_map = {"n":wordnet.NOUN, "j":wordnet.ADJ, "v":wordnet.VERB, "r":wordnet.ADV}
     deps = json.load(open(deps_loc))
 
     for met in metaphors:
         try:
-            id = met.source_file + "-" + met.id
+            cur_id = met.source_file + "-" + met.id
         except:
-            id = met.id
+            cur_id = met.id
         
-        if id in deps.keys():
-            dep_list = [d.split("\t") for d in deps[id].split("\n")]
+        if cur_id in deps.keys():
+            dep_list = [d.split("\t") for d in deps[cur_id].split("\n")]
             alignments = align_words(met.words, [d[lex_field] for d in dep_list if d != ['']], remove_punct=True)
-
+            
             for i in range(len(met.words)):
                 met.words[i].dep = None
 

@@ -1,4 +1,8 @@
 import CorpusLoaders
+from Util import VUAMC_VERBS
+
+MORE_VERBS = ["derive", "save", "fill", "keep", "dig", "worry", "pick", "handle", "spend"]
+MORE_MISC = ["sit", "use", "mean", "open", "identify", "indicate", "argue", "discuss", "play"]
 
 def run_pos_filter(filter, word):
     return not filter or word.pos in filter
@@ -86,10 +90,11 @@ def count_lemmas(corpus, filters=()):
 
 def analyze_lemma_metaphors(corpus, lemmas):
     res = {}
+    train_data = corpus.get_train_test_data()[0]
     for lemma in lemmas:
         res[lemma] = [[],[]]
-        for w in corpus.get_training_data():
-            if w.pos in CorpusLoaders.VUAMC_VERBS and w.lemma == lemma:
+        for w in train_data:
+            if w.pos in VUAMC_VERBS and w.lemma == lemma:
                 if "met" in w.met:
                     res[lemma][1].append((str(w.vnc), w.sentence.text()))
                 else:
@@ -111,8 +116,9 @@ def analyze_verb_met_percent(corpus, by_class=False):
     res = {}
 
     verbs = [{}, {}]
-    for w in corpus.get_training_data():
-        if w.pos in CorpusLoaders.VUAMC_VERBS:
+    train_data = corpus.get_train_test_data()[0]
+    for w in train_data:
+        if w.pos in VUAMC_VERBS:
             if by_class:
                 item = w.vnc
             else:
@@ -149,4 +155,4 @@ if __name__ == "__main__":
     corpus = CorpusLoaders.VUAMCCorpus()
 #    corpus = CorpusLoaders.LCCCorpus()
 #    analyze_verb_met_percent(corpus, False)
-    analyze_lemma_metaphors(corpus, ["allow"])
+    analyze_lemma_metaphors(corpus, MORE_MISC)

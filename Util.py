@@ -1,3 +1,5 @@
+root = "/home/kevin/GitHub/metaphor/"
+
 TAG_NOUNS = {"NNP", "NNS", "NN", "NNPS"}
 TAG_ADJS = {"JJ", "JJR", "JJS"}
 TAG_ADVS = {"RB", "RBR", "RBS"}

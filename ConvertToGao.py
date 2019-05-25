@@ -9,6 +9,12 @@ l = WordNetLemmatizer()
 
 import CorpusLoaders
 import SDP
+import Util
+
+VUA_TR_SEQ = "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_train.csv.vn"
+VUA_TE_SEQ = "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_test.csv.vn"
+VUA_VA_SEQ = "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_val.csv.vn"
+
 
 VN_RE = r"([a-zA-Z]+_[1-9][0-9]?[0-9]?([.-]?[0-9]+)+)"
 
@@ -60,15 +66,15 @@ def convert_met(word):
     elif word.met[1] == []:
         res = 1
     elif type(word.met[1]) == list:
-        if word.met[1][0] in CorpusLoaders.DOMAINS:
-            res = CorpusLoaders.DOMAINS.index(word.met[1][0])
+        if word.met[1][0] in Util.DOMAINS:
+            res = Util.DOMAINS.index(word.met[1][0])
         else:
             print ("target domain didn't match: " + word.met[1][0])
     else:
         for source_d in word.met[1]:
             if source_d[1] > 2:
-                if source_d[0] in CorpusLoaders.DOMAINS:
-                    res = CorpusLoaders.DOMAINS.index(source_d[0])
+                if source_d[0] in Util.DOMAINS:
+                    res = Util.DOMAINS.index(source_d[0])
     return res
 
 
@@ -347,10 +353,9 @@ def convert_lcc(corpus):
     for i in range(len(corpus.instances)):
         instance = corpus.instances[i]
         elmo.append(instance.text() + "\n")
-        
-        seq.append(("lcc", str(i), instance.text(), str(["1" if ("source" in w.met or "target" in w.met) else "0" for w in instance.words]), str([POS_DICT[w.pos] for w in instance.words]), " ".join(["M_" + w.text if ("source" in w.met or "target" in w.met) else w.text for w in instance.words]), "lcc"))
+        seq.append(("lcc", instance.id, instance.text(), str(["1" if ("source" in w.met or "target" in w.met) else "0" for w in instance.words]), str([POS_DICT[w.pos] for w in instance.words]), " ".join(["M_" + w.text if ("source" in w.met or "target" in w.met) else w.text for w in instance.words]), "lcc"))
 
-        m_seq.append(("lcc", str(i), instance.text(), str([convert_met(w) for w in instance.words]), str([POS_DICT[w.pos] for w in instance.words]), " ".join(["M_" + w.text if convert_met(w) > 0 else w.text for w in instance.words]), "lcc"))
+        m_seq.append(("lcc", instance.id, instance.text(), str([convert_met(w) for w in instance.words]), str([POS_DICT[w.pos] for w in instance.words]), " ".join(["M_" + w.text if convert_met(w) > 0 else w.text for w in instance.words]), "lcc"))
         
 
     with open("lcc_elmo.txt", "w", encoding="utf-8") as elm_out:
@@ -363,12 +368,33 @@ def convert_lcc(corpus):
     with open("lcc_seq_mult.csv", "w", encoding="utf-8") as mult_seq_out:
         w = csv.writer(mult_seq_out)
         w.writerows(m_seq)
+
+def add_deps(input_file, corpus):
+    lines = csv.reader(open(input_file, encoding='latin-1'))
+    with open(input_file + ".dep", "w", encoding="latin-1") as output_file:
+        wr = csv.writer(output_file)
+    
+        for l in lines:
+            key = l[0] + "-" + l[1]
+            for sent in corpus.instances:
+                if sent.source_file + "-" + sent.id == key:
+                    if len(l[2].split()) != len(sent.words):
+                        l.append([""]*len(l[2].split()))
+                        l.append([""]*len(l[2].split()))
+                        l.append([""]*len(l[2].split()))
+                        l.append([""]*len(l[2].split()))
+                    else:
+                        l.append([sent.find_head(w).text if sent.find_head(w) else "" for w in sent.words])
+                        l.append([" ".join([w2.text for w2 in sent.find_dependencies(w)]) for w in sent.words])
+                        l.append([w.dep[-3] if w.dep else "" for w in sent.words])
+                        l.append([" ".join([w2.dep[-3] for w2 in sent.find_dependencies(w)]) for w in sent.words])
+            wr.writerow(l)
         
 def main():
-#    convert_all_vn("C:/Users/Kevin/PycharmProjects/metaphor/corpora/additional_met/vn/")
-#    add_vnc()
-#    convert_all_syn()
-    convert_lcc(CorpusLoaders.LCCCorpus())
+    corpus = CorpusLoaders.VUAMCCorpus()
+    add_deps(VUA_TR_SEQ, corpus)
+    add_deps(VUA_TE_SEQ, corpus)
+    add_deps(VUA_VA_SEQ, corpus)
     
 if __name__ == "__main__":
     main()
