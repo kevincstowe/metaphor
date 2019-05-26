@@ -13,23 +13,21 @@ import random
 
 import ML
 import CorpusLoaders
-import Features
 
-from Util import root, DOMAINS
+from Util import extra_root, model_loc, DOMAINS
 from gensim.models import KeyedVectors
 from gensim.scripts.glove2word2vec import glove2word2vec
 from gensim.test.utils import datapath, get_tmpfile
 
-vec_root = "/data/kevin/Vectors/"
 
-W2V_VECTORS = vec_root + "GoogleNews-vectors-negative300.bin"
-GLOVE_VECTORS = "/data/glove/glove.840B.300d.txt"
-GLOVE_SENSE_VECTORS = vec_root + "glove_models/glove-sense450.vectors.txt.w"
-GLOVE_CLASS_VECTORS = vec_root + "glove_models/glove-class450.vectors.txt.w"
+W2V_VECTORS = model_loc + "GoogleNews-vectors-negative300.bin"
+GLOVE_VECTORS = model_loc + "glove.840B.300d.txt"
+GLOVE_SENSE_VECTORS = model_loc + "glove-sense450.vectors.txt.w"
+GLOVE_CLASS_VECTORS = model_loc + "glove_models/glove-class450.vectors.txt.w"
 
-CONCRETENESS_PATH = "corpora/concreteness.txt"
-ANEW_PATH = "corpora/anew.csv"
-MRC_PATH = "corpora/1054/mrc2.dct"
+CONCRETENESS_PATH = extra_root + "corpora/concreteness.txt"
+ANEW_PATH = extra_root + "corpora/anew.csv"
+MRC_PATH = extra_root + "corpora/1054/mrc2.dct"
 
 concrete_dict = {}
 anew_dict = {}

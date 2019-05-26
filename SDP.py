@@ -1,10 +1,12 @@
 from nltk.parse.stanford import StanfordDependencyParser
 from nltk.tag.stanford import StanfordPOSTagger
 
-path_to_jar = '../stanford-parser-full-2018-10-17/stanford-parser.jar'
-path_to_models_jar = '..//stanford-parser-full-2018-10-17/stanford-parser-3.9.2-models.jar'
-path_to_pos_tagger = '../stanford-postagger-2018-10-16/models/english-bidirectional-distsim.tagger'
-path_to_pos_jar = '../stanford-postagger-2018-10-16/stanford-postagger.jar'
+from Util import parser_loc
+
+path_to_jar = parser_loc + 'stanford-parser.jar'
+path_to_models_jar = parser_loc + 'stanford-parser-3.9.2-models.jar'
+path_to_pos_tagger = parser_loc + 'models/english-bidirectional-distsim.tagger'
+path_to_pos_jar = parser_loc + 'stanford-postagger.jar'
 
 dependency_parser = StanfordDependencyParser(path_to_jar=path_to_jar, path_to_models_jar=path_to_models_jar)
 pos_tagger = StanfordPOSTagger(path_to_pos_tagger, path_to_pos_jar)

@@ -244,20 +244,6 @@ def add_vn_parse(sentences, vn_parse_location):
                 for word in sent.words:
                     if word.text.strip(string.punctuation) == vn_tag.split()[0] or vn_tag.split()[0] in word.text.strip(string.punctuation).split("-"):
                         word.vnc = vn_tag.split()[1]
-#        else:
-#            print("no vn parse:" + id)
-
-
-def populate_vn_from_heads(sentences):
-    for sent in sentences:
-        for w in sent.words:
-            count = 0
-            while w and w.vnc in ["None", None, "NONE"] and count < 5:
-                h = sent.find_head(w)
-                if h and h.vnc:
-                    w.vnc = h.vnc
-                w = h
-                count += 1
 
 
 def add_allen_parse(sentences, allen_parse_location):

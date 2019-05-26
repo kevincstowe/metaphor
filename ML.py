@@ -7,7 +7,7 @@ import random
 def run_cv(X, y, model_type, params, folds=5):
     classifier = model_type(**params)
     scores = cross_val_score(classifier, X, y, cv=folds, scoring=make_scorer(f1_score))
-    #scores = cross_val_score(classifier, X, y, cv=folds, scoring="f1")
+
     return (sum(scores)/folds)
 
 
@@ -23,21 +23,6 @@ def f1(v_data):
         f1 = 2 * ((prec * rec) / (prec + rec))
     return f1
 
-def fivetwo(X, y, model_type, params):
-    res = []
-
-    for i in range(5):
-#        combined = list(zip(X, y))
-#        random.shuffle(combined)
-#        X, y = zip(*combined)
-#        classifier = model_type(**params)
-#        print (X)
-#        classifier.fit(X, y)
-        classifier = model_type(**params).fit(X, y)
-        preds = classifier.predict(X[int(len(X)/2):])
-
-        print (preds, y[int(len(y)/2)])
-        print (res)
 
 def replacement(X, y, model, n=1000):
     predictions = model.predict(X)

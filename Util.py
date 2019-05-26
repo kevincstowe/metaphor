@@ -1,4 +1,7 @@
-root = "/home/kevin/GitHub/metaphor/"
+extra_root = "/data/kevin/GitHub/metaphor/add_ons/"
+vn_api_root = "/data/kevin/GitHub/verbnet/"
+model_loc = "/data/kevin/Vectors/models/"
+parser_loc = "/data/kevin/parser/"
 
 TAG_NOUNS = {"NNP", "NNS", "NN", "NNPS"}
 TAG_ADJS = {"JJ", "JJR", "JJS"}

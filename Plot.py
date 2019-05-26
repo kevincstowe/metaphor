@@ -1,8 +1,6 @@
 from matplotlib import pyplot as pp
 import numpy as np
 
-#data = [[float(n) for n in line.split()] for line in open("final_results").readlines()]
-
 def plot_data():
     colors = ["blue", "green", "gray", "cyan"]
 

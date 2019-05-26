@@ -8,9 +8,9 @@ from sklearn.ensemble import RandomForestClassifier
 
 import SDP
 import ML
+from Util import vn_api_path
 
-local_verbnet_api_path = "/home/kevin/GitHub/verbnet/api/"
-sys.path.append(local_verbnet_api_path)
+sys.path.append(vn_api_path)
 
 import verbnet
 

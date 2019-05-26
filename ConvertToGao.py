@@ -11,9 +11,11 @@ import CorpusLoaders
 import SDP
 import Util
 
-VUA_TR_SEQ = "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_train.csv.vn"
-VUA_TE_SEQ = "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_test.csv.vn"
-VUA_VA_SEQ = "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_val.csv.vn"
+
+
+VUA_TR_SEQ = Util.extra_root + "metaphor-in-context/data/VUAsequence/VUA_seq_formatted_train.csv.vn"
+VUA_TE_SEQ = Util.extra_root + "/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_test.csv.vn"
+VUA_VA_SEQ = Util.extra_Root + "/home/kevin/GitHub/metaphor-in-context/data/VUAsequence/VUA_seq_formatted_val.csv.vn"
 
 
 VN_RE = r"([a-zA-Z]+_[1-9][0-9]?[0-9]?([.-]?[0-9]+)+)"
@@ -80,7 +82,7 @@ def convert_met(word):
 
     
 def write_output(data, filename):
-    with open("C:/Users/Kevin/PycharmProjects/metaphor/corpora/additional_met/gao/" + filename, "w", newline="", encoding="utf-8") as gao_output:
+    with open(Util.extra_root + "corpora/additional_met/gao/" + filename, "w", newline="", encoding="utf-8") as gao_output:
         writer = csv.writer(gao_output)
         writer.writerow(["filler"])
         for line in data:
@@ -114,9 +116,9 @@ def clean_line(line):
     return data
 
 
-def convert_all_syn(directory="C:/Users/Kevin/PycharmProjects/metaphor/corpora/additional_met/syntax/"):
+def convert_all_syn(directory=Util.extra_root + "corpora/additional_met/syntax/"):
     output = {k:[] for k in PATTERN_DICT.keys()}
-#    output = {k:[] for k in ["encourage-dobj_~to"]}
+
     verb_counts = {}
     for f in os.listdir(directory):
         verb = f.split("-")[0]
@@ -138,7 +140,7 @@ def convert_all_syn(directory="C:/Users/Kevin/PycharmProjects/metaphor/corpora/a
         for l in output[k]:
             elmo_out.append(" ".join(clean_line(l[0])) + "\n")
 
-    with open("C:/Users/Kevin/PycharmProjects/metaphor/corpora/additional_met/elmo_input/syn_extra", "w", encoding="latin-1") as output_file:
+    with open(Util.extra_root + "corpora/additional_met/elmo_input/syn_extra", "w", encoding="latin-1") as output_file:
         output_file.writelines(elmo_out)
 
     print ("elmo done, doing seqs...")
@@ -161,7 +163,7 @@ def convert_all_vn(directory):
 
     elmo_lines, vnc_lines = convert_to_elmo(data)
 
-    with open("C:/Users/Kevin/PycharmProjects/metaphor/corpora/additional_met/elmo_input/vn_extra", "w", encoding="utf-8") as output_file:
+    with open(Util.extra_root + "corpora/additional_met/elmo_input/vn_extra", "w", encoding="utf-8") as output_file:
         output_file.writelines(elmo_lines)
 
     convert_vn_to_cls(vnc_lines)

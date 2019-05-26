@@ -13,30 +13,30 @@ from nltk.stem import WordNetLemmatizer
 
 import Corpus
 import Util
-from Util import root, TAG_NOUNS, TAG_VERBS, TAG_ADJS, TAG_ADVS, FICTION, ACADEMIC, NEWS, CONVERSATION
+from Util import extra_root, TAG_NOUNS, TAG_VERBS, TAG_ADJS, TAG_ADVS, FICTION, ACADEMIC, NEWS, CONVERSATION
 
 root = ""
 
-LCC_DEPS = root + "deps/lcc_deps.json"
-TROFI_DEPS = root + "deps/trofi_deps.json"
-MOHX_DEPS = root + "deps/mohx.json"
-VUAMC_DEPS = root + "deps/vuamc_deps.json"
+LCC_DEPS = extra_root + "deps/lcc_deps.json"
+TROFI_DEPS = extra_root + "deps/trofi_deps.json"
+MOHX_DEPS = extra_root + "deps/mohx.json"
+VUAMC_DEPS = extra_root + "deps/vuamc_deps.json"
 
-LCC_LOCATION = root + "corpora/lcc_metaphor_dataset/en_small.xml"
-TROFI_LOCATION = root + "corpora/trofi/TroFiExampleBase.txt"
-MOHX_LOCATION = root + "corpora/MOH-X/MOH-X_formatted_svo_cleaned.csv"
-VUAMC_CSV = root + "corpora/vuamc_corpus_all.csv"
-VUAMC_DUMP = root + "corpora/vuamc_dump.p"
+LCC_LOCATION = extra_root + "corpora/lcc_metaphor_dataset/en_small.xml"
+TROFI_LOCATION = extra_root + "corpora/trofi/TroFiExampleBase.txt"
+MOHX_LOCATION = extra_root + "corpora/MOH-X/MOH-X_formatted_svo_cleaned.csv"
+VUAMC_CSV = extra_root + "corpora/vuamc_corpus_all.csv"
+VUAMC_DUMP = extra_root + "corpora/vuamc_dump.p"
 
-LCC_VN = root + "vn/lcc.vn"
-VUAMC_VN = root + "vn/vuamc.vn"
+LCC_VN = extra_root + "vn/lcc.vn"
+VUAMC_VN = extra_root + "vn/vuamc.vn"
 
-VUAMC_ALLEN = root + "allen/vuamc.allen"
+VUAMC_ALLEN = extra_root + "allen/vuamc.allen"
 
-TRAIN_TASK_LABELS = "../met-shared-task/all_pos_tokens.csv"
-TEST_TASK_LABELS = "../met-shared-task/all_pos_tokens_test.csv"
-VERB_TRAIN_TASK_LABELS = "../met-shared-task/verb_tokens.csv"
-VERB_TEST_TASK_LABELS = "../met-shared-task/verb_tokens_test.csv"
+TRAIN_TASK_LABELS = extra_root + "met-shared-task/all_pos_tokens.csv"
+TEST_TASK_LABELS = extra_root + "met-shared-task/all_pos_tokens_test.csv"
+VERB_TRAIN_TASK_LABELS = extra_root + "met-shared-task/verb_tokens.csv"
+VERB_TEST_TASK_LABELS = extra_root + "met-shared-task/verb_tokens_test.csv"
 
 '''
  LCC CORPUS
@@ -198,7 +198,7 @@ class VUAMCCorpus(Corpus.Corpus):
         if not instances:
             instances = self.instances
 
-        with open("C:/Users/Kevin/PycharmProjects/metaphor/corpora/vuamc/vuamc_gao.vn", "w") as output_file:
+        with open(extra_root + "corpora/vuamc/vuamc_gao.vn", "w") as output_file:
             for instance in instances:
                 output_file.write(instance.source_file + ";;" + instance.id + ";;" + str([w.vnc for w in instance.words]) + ";;" + instance.text() + "\n")
         return {instance.source_file + "-" + instance.id:[str([w.vnc for w in instance.words]), instance.text()] for instance in instances}
@@ -260,7 +260,6 @@ def load_vuamc_csv(filename=VUAMC_CSV):
     Corpus.add_dependencies(sentences, VUAMC_DEPS)
     Corpus.add_vn_parse(sentences, VUAMC_VN)
     Corpus.add_allen_parse(sentences, VUAMC_ALLEN)
-    #Corpus.populate_vn_from_heads(sentences)
 
     return sentences, all_words
 
