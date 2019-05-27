@@ -13,30 +13,33 @@ from nltk.stem import WordNetLemmatizer
 
 import Corpus
 import Util
-from Util import extra_root, TAG_NOUNS, TAG_VERBS, TAG_ADJS, TAG_ADVS, FICTION, ACADEMIC, NEWS, CONVERSATION
+from Util import root, TAG_NOUNS, TAG_VERBS, TAG_ADJS, TAG_ADVS, FICTION, ACADEMIC, NEWS, CONVERSATION
 
-root = ""
+root = "/home/kevin/GitHub/metaphor/"
 
-LCC_DEPS = extra_root + "deps/lcc_deps.json"
-TROFI_DEPS = extra_root + "deps/trofi_deps.json"
-MOHX_DEPS = extra_root + "deps/mohx.json"
-VUAMC_DEPS = extra_root + "deps/vuamc_deps.json"
+LCC_DEPS = root + "deps/lcc_deps.json"
+TROFI_DEPS = root + "deps/trofi_deps.json"
+MOHX_DEPS = root + "deps/mohx.json"
+VUAMC_DEPS = root + "deps/vuamc_deps.json"
 
-LCC_LOCATION = extra_root + "corpora/lcc_metaphor_dataset/en_small.xml"
-TROFI_LOCATION = extra_root + "corpora/trofi/TroFiExampleBase.txt"
-MOHX_LOCATION = extra_root + "corpora/MOH-X/MOH-X_formatted_svo_cleaned.csv"
-VUAMC_CSV = extra_root + "corpora/vuamc_corpus_all.csv"
-VUAMC_DUMP = extra_root + "corpora/vuamc_dump.p"
+LCC_LOCATION = root + "corpora/lcc_metaphor_dataset/en_small.xml"
+TROFI_LOCATION = root + "corpora/trofi/TroFiExampleBase.txt"
+MOHX_LOCATION = root + "corpora/MOH-X/MOH-X_formatted_svo_cleaned.csv"
+VUAMC_CSV = root + "corpora/vuamc_corpus_all.csv"
+VUAMC_DUMP = root + "corpora/vuamc_dump.p"
 
-LCC_VN = extra_root + "vn/lcc.vn"
-VUAMC_VN = extra_root + "vn/vuamc.vn"
+EXTRA_VN = "/home/kevin/GitHub/metaphor-in-context/data/vn_extra.csv"
+EXTRA_SYN = "/home/kevin/GitHub/metaphor-in-context/data/syn_extra.csv"
 
-VUAMC_ALLEN = extra_root + "allen/vuamc.allen"
+LCC_VN = root + "vn/lcc.vn"
+VUAMC_VN = root + "vn/vuamc.vn"
 
-TRAIN_TASK_LABELS = extra_root + "met-shared-task/all_pos_tokens.csv"
-TEST_TASK_LABELS = extra_root + "met-shared-task/all_pos_tokens_test.csv"
-VERB_TRAIN_TASK_LABELS = extra_root + "met-shared-task/verb_tokens.csv"
-VERB_TEST_TASK_LABELS = extra_root + "met-shared-task/verb_tokens_test.csv"
+VUAMC_ALLEN = root + "allen/vuamc.allen"
+
+TRAIN_TASK_LABELS = "/home/kevin/met-shared-task/all_pos_tokens.csv"
+TEST_TASK_LABELS = "/home/kevin/met-shared-task/all_pos_tokens_test.csv"
+VERB_TRAIN_TASK_LABELS = "/home/kevin/met-shared-task/verb_tokens.csv"
+VERB_TEST_TASK_LABELS = "/home/kevin/met-shared-task/verb_tokens_test.csv"
 
 '''
  LCC CORPUS
@@ -198,7 +201,7 @@ class VUAMCCorpus(Corpus.Corpus):
         if not instances:
             instances = self.instances
 
-        with open(extra_root + "corpora/vuamc/vuamc_gao.vn", "w") as output_file:
+        with open("C:/Users/Kevin/PycharmProjects/metaphor/corpora/vuamc/vuamc_gao.vn", "w") as output_file:
             for instance in instances:
                 output_file.write(instance.source_file + ";;" + instance.id + ";;" + str([w.vnc for w in instance.words]) + ";;" + instance.text() + "\n")
         return {instance.source_file + "-" + instance.id:[str([w.vnc for w in instance.words]), instance.text()] for instance in instances}
@@ -260,6 +263,7 @@ def load_vuamc_csv(filename=VUAMC_CSV):
     Corpus.add_dependencies(sentences, VUAMC_DEPS)
     Corpus.add_vn_parse(sentences, VUAMC_VN)
     Corpus.add_allen_parse(sentences, VUAMC_ALLEN)
+    #Corpus.populate_vn_from_heads(sentences)
 
     return sentences, all_words
 
@@ -361,11 +365,67 @@ class MOHXCorpus(Corpus.Corpus):
         return res[:int(len(res)*.75)], res[int(len(res)*.75):]
 
 
+class VnCorpus(Corpus.Corpus):
+    def __init__(self, corpus_location):
+        self.instances, self.words = [], []
+        data = csv.reader(open(corpus_location))
+        next(data)
+        for line in data:
+            sentence = Corpus.Sentence()
+            sentence.id = line[1]
+
+            index = int(line[-2])
+            tag = int(line[-1])
+
+            sent_data = line[2].split()
+            for i in range(len(sent_data)):
+                word = sent_data[i]
+                met = "N"
+                if i == index:
+                    met = "met"
+                w = Corpus.Word(text=word, sentence=sentence, met=met, index=i)
+                sentence.words.append(w)
+                self.words.append(w)
+                
+            self.instances.append(sentence)
+
+#        Corpus.add_dependencies(self.instances, VN_DEPS, lex_field=1)
+
+class SynCorpus(Corpus.Corpus):
+    def __init__(self, corpus_location):
+        self.instances, self.words = [], []
+        data = csv.reader(open(corpus_location))
+        next(data)
+        for line in data:
+            sentence = Corpus.Sentence()
+            sentence.id = line[1]
+
+            index = int(line[-2])
+            tag = int(line[-1])
+
+            sent_data = line[3].split()
+            for i in range(len(sent_data)):
+                word = sent_data[i]
+                met = "N"
+                if i == index:
+                    met = "met"
+                w = Corpus.Word(text=word, sentence=sentence, met=met, index=i)
+                sentence.words.append(w)
+                self.words.append(w)
+                
+            self.instances.append(sentence)
+
+#        Corpus.add_dependencies(self.instances, VN_DEPS, lex_field=1)
+
+
 def test():
-    c = VUAMCCorpus()
+    corpus = VnCorpus(EXTRA_VN)
+    print (len(corpus.instances), len(corpus.words))
+    corpus.parse_and_save("deps/vn_corpus.json")
+    corpus = SynCorpus(EXTRA_SYN)
+    print (len(corpus.instances), len(corpus.words))
+    corpus.parse_and_save("deps/syn_corpus.json")
 
-    for w in c.words:
-        print (w, w.allen_tags)
-
+    
 if __name__ == "__main__":
     test()
