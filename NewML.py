@@ -23,11 +23,13 @@ from gensim.test.utils import datapath, get_tmpfile
 W2V_VECTORS = model_loc + "GoogleNews-vectors-negative300.bin"
 GLOVE_VECTORS = model_loc + "glove.840B.300d.txt"
 GLOVE_SENSE_VECTORS = model_loc + "glove-sense450.vectors.txt.w"
-GLOVE_CLASS_VECTORS = model_loc + "glove_models/glove-class450.vectors.txt.w"
+GLOVE_CLASS_VECTORS = model_loc + "glove-class450.vectors.txt.w"
 
 CONCRETENESS_PATH = extra_root + "corpora/concreteness.txt"
 ANEW_PATH = extra_root + "corpora/anew.csv"
 MRC_PATH = extra_root + "corpora/1054/mrc2.dct"
+
+CL_LENGTH = 100
 
 concrete_dict = {}
 anew_dict = {}
@@ -111,7 +113,61 @@ def convert_word_to_features(word, features={}):
             context_words.append((d, "deps-"))
             if "dep-rel" in features and d.dep:
                 res["dep-rel-" + d.dep[-3]] = 1
-                
+
+
+    if "class_embeddings" in features:
+        if word.vnc and word.vnc in features["class_embeddings"]:
+            cur_emb = features["class_embeddings"][word.vnc]
+            for i in range(len(cur_emb)):
+                if "vncl-" + str(i) not in res:
+                    res["vncl-" + str(i)] = 0
+                res["vncl-" + str(i)] += cur_emb[i]
+        if "class_deps" in features:
+            deps = word.sentence.find_dependencies(word)
+            for d in deps:
+                if d.vnc and d.vnc in features["class_embeddings"]:
+                    cur_emb = features["class_embeddings"][d.vnc]
+                    for i in range(len(cur_emb)):
+                        if "depsvncl-" + str(i) not in res:
+                            res["depsvncl-" + str(i)] = 0 
+                        res["depsvncl-" + str(i)] += cur_emb[i]
+        if "class_head" in features:
+            head = word.sentence.find_head(word)
+            if head and head.vnc and head.vnc in features["class_embeddings"]:
+                cur_emb = features["class_embeddings"][head.vnc]
+                for i in range(len(cur_emb)):
+                    if "headvncl-" + str(i) not in res:
+                        res["headvncl-" + str(i)] = 0
+                    res["headvncl-" + str(i)] += cur_emb[i]
+
+    # VN EMBEDDINGS
+    if "sense_embeddings" in features:
+        if word.vnc and word.text + "_" + word.vnc in features["sense_embeddings"]:
+            cur_emb = features["sense_embeddings"][word.text + "_" + word.vnc]
+            for i in range(len(cur_emb)):
+                if "vnse-" + str(i) not in res:
+                    res["vnse-" + str(i)] = 0
+                res["vnse-" + str(i)] += cur_emb[i]
+        if "sense_deps" in features:
+            deps = word.sentence.find_dependencies(word)
+            for d in deps:
+                if d.vnc and d.text + "_" + d.vnc and d.text + "_" + d.vnc in features["sense_embeddings"]:
+                    cur_emb = features["sense_embeddings"][d.text + "_" + d.vnc]
+                    for i in range(len(cur_emb)):
+                        if "depsvnse-" + str(i) not in res:
+                            res["depsvnse-" + str(i)] = 0
+                        res["depsvnse-" + str(i)] += cur_emb[i]
+        if "sense_head" in features:
+            head = word.sentence.find_head(word)
+            if head and head.vnc and head.text + "_" + head.vnc and head.text + "_" + head.vnc in features["sense_embeddings"]:
+                cur_emb = features["sense_embeddings"][head.text + "_" + head.vnc]
+                for i in range(len(cur_emb)):
+                    if "headvnse-" + str(i) not in res:
+                        res["headvnse-" + str(i)] = 0
+                    res["headvnse-" + str(i)] += cur_emb[i]
+
+          
+
     for w in context_words:
         cur_word, prefix = w
         res[prefix + "lemma-" +cur_word.lemma] = 1
@@ -165,9 +221,9 @@ def convert_word_to_features(word, features={}):
             if (cur_word == word or "head" in prefix) and cur_word.vnc and cur_word.text + "_" + cur_word.vnc in features["sense_embeddings"]:
                 cur_emb = features["sense_embeddings"][cur_word.text + "_" + cur_word.vnc]
                 for i in range(len(cur_emb)):
-                    if prefix + "-vn-" + str(i) not in res:
-                        res[prefix + "-vn-" + str(i)] = 0
-                    res[prefix + "-vn-" + str(i)] += cur_emb[i]
+                    if prefix + "-vns-" + str(i) not in res:
+                        res[prefix + "-vns-" + str(i)] = 0
+                    res[prefix + "-vns-" + str(i)] += cur_emb[i]
 
     return res
 
@@ -229,7 +285,7 @@ class Learner(object):
         return ML.run_cv(train_x, train_y, model_type, params, folds)
 
     def replacement(self):
-        ML.replacement(self.test_x, self.test_y, self.model)
+        return ML.replacement(self.test_x, self.test_y, self.model)
 
     def fivetwo(self, feature_set, model_type, params, multi=False):
         res = []
@@ -289,16 +345,15 @@ if __name__ == "__main__":
     replacement = True
     fivetwo = False
     lcc = False
-    verb = False
-    
-    ml = Learner(corpus, size=size, verb=verb, cv=cv)
        
     embeddings = KeyedVectors.load_word2vec_format(W2V_VECTORS, binary=True)
     vn_glove = KeyedVectors.load_word2vec_format(GLOVE_SENSE_VECTORS)
-    print ("featurizing data...")
+    #cl_glove = KeyedVectors.load_word2vec_format(GLOVE_CLASS_VECTORS)
 
-    for m in [(LinearSVC, {"max_iter":100000})
-              ]:
+    print ("featurizing data...")
+    m = [LinearSVC, {"max_iter":100000}]
+    for v in [True]:
+        ml = Learner(corpus, size=size, verb=v, cv=cv)
         for feature_set in [#None,
                             #{"bigram":0, "pre":0, "nex":0},
                             #{"trigram":1, "pre":0, "nex":0},
@@ -336,12 +391,14 @@ if __name__ == "__main__":
                             #{"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "embeddings":embeddings, "vnc":1},
                             #{"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "embeddings":embeddings, "vnc-head":1},
                             #{"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "embeddings":embeddings, "vnc-deps":1},
-                            {"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "head":1, "embeddings":embeddings, "sense_embeddings":vn_glove}
-                ]:
-
+                            {"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "embeddings":embeddings, "sense_embeddings":vn_glove},
+                            #{"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "embeddings":embeddings, "sense_embeddings":vn_glove, "sense_head":1},
+                            #{"pre":2, "nex":2, "mrc":1, "anew":1, "concrete":1, "pos":1, "bigram":1, "embeddings":embeddings, "sense_embeddings":vn_glove, "sense_deps":1}
+                            ]:
             if not feature_set:
                 print ("-")
             else:
+                print (feature_set)
                 if fivetwo:
                     res = ml.fivetwo(feature_set, model_type=m[0], params=m[1], multi=lcc)
                     print (res[0], res[1])
@@ -349,6 +406,6 @@ if __name__ == "__main__":
                     ml.featurize_dataset(feature_set, multi=lcc, train=ml.training_data, test=ml.test_data)
                     ml.train_model(model_type=m[0], params=m[1])
                     if replacement:
-                        ml.replacement()
+                        print (v, ml.replacement())
                     else:
                         print (ml.evaluate(lcc))
